@@ -11,28 +11,37 @@ on:
       - 'v*.*.*'
 
 jobs:
-  setup:
-    runs-on: [self-hosted]
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-    outputs:
-      kubeconfig-path: ${{ steps.set-kubeconfig.outputs.kubeconfig-path }}
+  # setup:
+    # runs-on: [self-hosted]
+    # if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    # outputs:
+    #   kubeconfig-path: ${{ steps.set-kubeconfig.outputs.kubeconfig-path }}
+    # steps:
+    #   - name: Checkout repository
+    #     uses: actions/checkout@v4
+    #   - name: Install Kubectl and helm
+    #     uses: azure/setup-kubectl@v4
+    #     with:
+    #       version: 'v1.35.0'  
+    #   - name: Set kubeconfig output
+    #     id: set-kubeconfig
+    #     run: echo "kubeconfig-path=$HOME/.kube/config" >> $GITHUB_OUTPUT
+
+
+  deploy-dev:
+    # needs: setup
+    runs-on: [self-hosted, qa] # only runs on a self-hosted runner with the 'qa' label
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && contains(github.ref, 'refs/heads/release/') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Install Kubectl and helm
         uses: azure/setup-kubectl@v4
         with:
-          version: 'v1.35.0'  
+          version: 'v1.35.0' 
       - name: Set kubeconfig output
         id: set-kubeconfig
         run: echo "kubeconfig-path=$HOME/.kube/config" >> $GITHUB_OUTPUT
-
-
-  deploy-dev:
-    needs: setup
-    runs-on: [self-hosted, qa] # only runs on a self-hosted runner with the 'qa' label
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && contains(github.ref, 'refs/heads/release/') }}
-    steps:
       - name: Show cluster nodes (in-cluster auth)
         run: |
           API="https://kubernetes.default.svc"
@@ -57,16 +66,19 @@ jobs:
           FLOWABLE_REPO_PASSWORD: ${{ secrets.FLOWABLE_REPO_PASSWORD }}
 
   deploy-test:
-    needs: setup
+    # needs: setup
     runs-on: [self-hosted, qa] # only runs on a self-hosted runner with the 'qa' label
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && github.ref == 'refs/heads/dev' }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install kubectl and helm
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Kubectl and helm
         uses: azure/setup-kubectl@v4
         with:
-          version: 'v1.35.0'   # match your cluster
+          version: 'v1.35.0' 
+      - name: Set kubeconfig output
+        id: set-kubeconfig
+        run: echo "kubeconfig-path=$HOME/.kube/config" >> $GITHUB_OUTPUT
 
       - name: Show cluster nodes (in-cluster auth)
         run: |
@@ -92,16 +104,19 @@ jobs:
           FLOWABLE_REPO_PASSWORD: ${{ secrets.FLOWABLE_REPO_PASSWORD }}
 
   deploy-stg:
-    needs: setup
+    # needs: setup
     runs-on: [self-hosted, prod] # only runs on a self-hosted runner with the 'prod' label
     if: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name != '' && github.ref_type == 'tag' && github.event.base_ref == 'refs/heads/main' }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install kubectl and helm
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Kubectl and helm
         uses: azure/setup-kubectl@v4
         with:
-          version: 'v1.35.0'
+          version: 'v1.35.0' 
+      - name: Set kubeconfig output
+        id: set-kubeconfig
+        run: echo "kubeconfig-path=$HOME/.kube/config" >> $GITHUB_OUTPUT
 
       - name: Show cluster nodes (in-cluster auth)
         run: |
