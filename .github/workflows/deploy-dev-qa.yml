@@ -19,25 +19,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set kubeconfig output
-        id: set-kubeconfig
+      - name: Install Kubectl and helm
         uses: azure/setup-kubectl@v4
         with:
           version: 'v1.35.0'  
+      - name: Set kubeconfig output
+        id: set-kubeconfig
         run: echo "kubeconfig-path=$HOME/.kube/config" >> $GITHUB_OUTPUT
+
 
   deploy-dev:
     needs: setup
     runs-on: [self-hosted, qa] # only runs on a self-hosted runner with the 'qa' label
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && contains(github.ref, 'refs/heads/release/') }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install kubectl and helm
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'v1.35.0'   # match your cluster
-
       - name: Show cluster nodes (in-cluster auth)
         run: |
           API="https://kubernetes.default.svc"
