@@ -11,6 +11,8 @@ source ~/.bashrc
 yq -i '.flowable.work.envVariables."spring.security.oauth2.client.registration.github.redirect-uri" = strenv(AUTH_REDIRECT_URL)' helm/stg/values.yaml
 yq -i '.flowable.work.envVariables."flowable.security.oauth2.post-logout-redirect-url" = strenv(POST_LOGOUT_REDIRECT_URL)' helm/stg/values.yaml
 
+export MODELS_REPO="git@github.com:$GITHUB_USER/flowable-models-repo.git"
+yq -i '.flowable.design.envVariables."flowable.design.git.repo.uri" = strenv(MODELS_REPO)' helm/dev/values.yaml
 yq -i '.flowable.ingress.host = strenv(DEV_INGRESS_HOST)' helm/dev/values.yaml
 yq -i '.flowable.ingress.host = strenv(TEST_INGRESS_HOST)' helm/test/values.yaml
 yq -i '.flowable.ingress.host = strenv(STG_INGRESS_HOST)' helm/stg/values.yaml
@@ -29,7 +31,17 @@ setup_cluster() {
 		
 		export GITHUB_TOKEN="" 
 		echo $ARC_TOKEN | gh auth login -p https --with-token
+		gh auth refresh -h github.com -s admin:public_key
 		gh ssh-key add /home/codespace/.ssh/id_rsa.pub --title "${CODESPACE_NAME}" --type authentication
+
+		mkdir -p docker/.ssh
+		cp /home/codespace/.ssh/id_rsa.pub docker/.ssh/
+		cp /home/codespace/.ssh/id_rsa docker/.ssh/
+		echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=" >> docker/.ssh/known_hosts
+		sudo chmod +rw docker/.ssh
+		sudo chown 100:100 docker/.ssh/id_rsa
+		sudo chown 100:100 docker/.ssh/id_rsa
+		sudo chown 100:100 docker/.ssh/known_hosts
 	fi
 
 	if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "docker-flowable-db-1")" = 'null' ]; then
@@ -95,3 +107,5 @@ if [[ $1 == "--all" || $1 == "prod" ]]; then
 	echo "Flowable Work: " $STG_INGRESS_HOST "work/"
 	echo "Flowable Control: " $STG_INGRESS_HOST "control/"
 fi
+
+source ~/.bashrc
