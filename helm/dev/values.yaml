@@ -2,7 +2,7 @@ flowable:
   ingress:
     #     # Enable/disbale the ingress configuration for the Helm chart.
     enabled: false
-    host: "https://scaling-garbanzo-9pxjj7v6qw6c7jxw-80.app.github.dev/dev"
+    host: "https://verbose-yodel-x5x7qjv9x67fx6p-80.app.github.dev/dev"
   #   # Define if https should be used to access the service urls (this is highly suggested)
   #   tls: true
   #   # Ingress proxy settings in case of custom frontend (CORS)
@@ -22,8 +22,8 @@ flowable:
       #    repository: localhost:5001/myflowable
       # repository: ghcr.io/abretz-mimacom/flowable-models-public
       # tag: latest
-      tag: 3.17.2
-      # tag: 2025.1.01
+      # tag: 3.17.2
+      tag: 2025.2.04
     replicas: 1 # multi-node deployment
     resources:
       requests:
@@ -50,27 +50,6 @@ flowable:
       flowable.platform.enable-audit-log: "true"
       management.elastic.metrics.export.enabled: "true"
       flowable.indexing.enabled: "true"
-      # extraVolumes:
-      #   - name: additional-classpath
-      #     hostPath:
-      #       path: /Users/aaron.bretz/.m2/repository/org/flowable/jobapplication/0.0.1-SNAPSHOT/
-      #       type: Directory
-      # extraVolumeMounts:
-      #   - name: additional-classpath
-      #     mountPath: /additional-classpath/
-      # initContainers:
-      #   - name: copy-jar
-      #     image: busybox
-      #     command: ["sh", "-c", "cp /jars/my-lib.jar /additional-classpath/"]
-      #     volumeMounts:
-      #       - name: additional-classpath
-      #         mountPath: /additonal-classpath
-      #       - name: jar-source
-      #         mountPath:
-      #     volumeMounts:
-      #       - name: additional-classpath
-      #         mountPath: /additional-classpath/
-      # extraImagePullSecrets: flw-docker-auth
     storage:
       provisioner: rancher.io/local-path
       storageClass: standard
@@ -80,7 +59,7 @@ flowable:
     enabled: true
     image:
       # tag: latest
-      tag: 3.17.2
+      tag: 2025.2.04
     resources:
       requests:
         cpu: "300m"
@@ -98,10 +77,11 @@ flowable:
       spring.datasource.username: flowable
       spring.datasource.password: flowable
       flowable.design.git.repo.enabled: true
-      flowable.design.git.repo.clone-dir: "${LOCAL_REPO_DIR:additional-classpath/flowable-models-repo}"
+      flowable.design.git.repo.clone-dir: "${LOCAL_REPO_DIR:/additional-classpath/flowable-models-repo}"
       flowable.design.git.repo.remote-branch: master
-      flowable.design.git.repo.uri: git@github.com:abretz-mimacom/flowable-models-repo.git
+      flowable.design.git.repo.uri: git@github.com:abretz47/flowable-models-repo.git
       logging.level.org.apache.sshd: DEBUG
+      HOME: /home/flowable
       #      application.design.ai.type: openai
       #      spring.ai.openai.api-key: ""
       #      spring.ai.openai.chat.options.temperature: 0.3
