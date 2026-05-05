@@ -23,7 +23,7 @@ flowable:
       # repository: ghcr.io/abretz-mimacom/flowable-models-public
       # tag: latest
       # tag: 3.17.2
-      tag: v3.0.0-2e0f4cf
+      tag: v5.0.0-011679e
       repository: ghcr.io/abretz47/abretz47/flowable-models-repo
     replicas: 1 # multi-node deployment
     resources:
